@@ -1,7 +1,8 @@
-import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import styled from "styled-components"
 import { ICoin } from "../types/ICoin";
+import { useQuery } from "@tanstack/react-query";
+import { fetchCoins } from "../api/fetchCoins";
 
 const Container = styled.div`
   padding: 0px 20px;
@@ -56,28 +57,21 @@ const Img = styled.img`
 `;
 
 function Coins() {
-  const [coins, setCoins] = useState<ICoin[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-
-  useEffect(() => {
-    (async() => {
-      const res = await fetch("https://api.coinpaprika.com/v1/coins")
-      const data = await res.json();
-      setCoins(data.slice(0, 100));
-      setLoading(false);
-    })();
-  }, [])
+  const { data, isLoading } = useQuery<ICoin[]>({
+    queryKey: ['allCoins'],
+    queryFn: fetchCoins,
+  })
 
   return (
     <Container>
       <Header>
-        <Title>코인</Title>
+        <Title>COINS</Title>
       </Header>
-      {loading ? (
+      {isLoading ? (
         <Loader>loading...</Loader>
       ) : (
         <CoinsList>
-          {coins.map(coin => (
+          {data?.slice(0, 100).map(coin => (
             <Coin key={coin.id}>
               <Link to={`/${coin.id}`} state={coin}>
                 <Img src={`https://static.coinpaprika.com/coin/${coin.id}/logo.png`} />
